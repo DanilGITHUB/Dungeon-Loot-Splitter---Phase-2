@@ -1,0 +1,484 @@
+/* ============================================================
+   Dungeon Loot Splitter — style.css  (Phase 2)
+   Dark fantasy theme, mobile-first, grid at 768 px breakpoint.
+   All visibility toggling uses the .hidden class — no inline
+   style manipulation in JavaScript.
+   ============================================================ */
+
+
+/* --- RESET -------------------------------------------------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* --- DESIGN TOKENS ------------------------------------------ */
+/* One place to change colours, fonts, and spacing. */
+:root {
+  --bg-dark:         #0d0d1a;
+  --bg-panel:        #1a1a2e;
+  --bg-panel-alt:    #16213e;
+  --accent-gold:     #c9a84c;
+  --accent-glow:     #f0c060;
+  --text-light:      #e8e0d0;
+  --text-muted:      #9a8f7e;
+  --border-color:    #2e2e4e;
+  --error-color:     #e05c5c;
+  --btn-primary:     #7b2d8b;
+  --btn-primary-h:   #9b3dab;
+  --btn-secondary:   #2d5a8b;
+  --btn-secondary-h: #3d7aab;
+  --btn-remove:      #7a2020;
+  --btn-remove-h:    #a03030;
+  --radius:          6px;
+  --gap:             1rem;
+  --font-body:       'Georgia', serif;
+  --font-ui:         'Arial', sans-serif;
+}
+
+
+/* --- BASE --------------------------------------------------- */
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+
+/* --- HEADER ------------------------------------------------- */
+/* Gradient with a gold bottom border gives a fantasy-scroll feel */
+header {
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 60%, #2e1a3e 100%);
+  border-bottom: 2px solid var(--accent-gold);
+  padding: 1.5rem 1.25rem 1.25rem;
+  text-align: center;
+}
+
+header h1 {
+  font-family: var(--font-body);
+  font-size: 2rem;
+  color: var(--accent-gold);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 18px rgba(201, 168, 76, 0.4);
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+}
+
+
+/* --- LAYOUT: mobile-first, stacked -------------------------  */
+main {
+  padding: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+
+/* --- PANEL -------------------------------------------------- */
+.panel {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+/* Gold underline on each section heading for visual hierarchy */
+.panel h2 {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  color: var(--accent-gold);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.04em;
+}
+
+
+/* --- FORM FIELDS ------------------------------------------- */
+/* Each label + input is wrapped in .form-group so they stay
+   vertically stacked as a single visual unit. The gap between
+   groups is consistent and doesn't collapse. */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+input[type="text"],
+input[type="number"] {
+  background-color: #0d0d1a;
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: var(--font-ui);
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+/* Gold focus ring: visible for accessibility, matches the theme */
+input[type="text"]:focus,
+input[type="number"]:focus {
+  outline: 2px solid var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+
+/* --- BUTTONS ----------------------------------------------- */
+.btn {
+  display: inline-block;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  padding: 0.6rem 1.25rem;
+  transition: background-color 0.2s, transform 0.1s;
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.btn:focus {
+  outline: 2px solid var(--accent-glow);
+  outline-offset: 3px;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Primary: purple — used for Add Loot */
+.btn-primary {
+  background-color: var(--btn-primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: var(--btn-primary-h);
+}
+
+/* Secondary: blue — used for Split Loot */
+.btn-secondary {
+  background-color: var(--btn-secondary);
+  color: #fff;
+  margin-bottom: 1.25rem;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--btn-secondary-h);
+}
+
+/* Disabled state: muted so the user knows it's not clickable yet.
+   This drives action gating — JS sets the disabled attribute,
+   CSS renders the visual feedback. */
+.btn:disabled {
+  background-color: #2a2a40;
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* Remove buttons inside the loot table: dark red to signal destructive */
+.btn-remove {
+  background-color: var(--btn-remove);
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  margin-top: 0;
+}
+
+.btn-remove:hover {
+  background-color: var(--btn-remove-h);
+}
+
+
+/* --- ERROR MESSAGES ---------------------------------------- */
+.error-msg {
+  color: var(--error-color);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  min-height: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+
+/* --- HIDDEN CLASS ------------------------------------------ */
+/* JS adds/removes this class to show or hide elements.
+   We never write style.display directly in JavaScript. */
+.hidden {
+  display: none;
+}
+
+
+/* --- LOOT LIST PANEL --------------------------------------- */
+
+/* "No loot added." placeholder message */
+#noLootMessage {
+  color: var(--text-muted);
+  font-style: italic;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+}
+
+/* Grid table: 4 columns — Name gets the most space */
+.loot-table {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+/* Header cells: bold with a gold-tinted separator line */
+.loot-header {
+  font-weight: 600;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--accent-gold);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.35rem;
+  letter-spacing: 0.03em;
+}
+
+/* display:contents makes the wrapper div invisible to the grid
+   so its children slot directly into the parent grid columns */
+#lootRows {
+  display: contents;
+}
+
+/* Each item row is also display:contents for the same reason */
+.loot-row {
+  display: contents;
+}
+
+.loot-cell {
+  padding: 0.3rem 0;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--text-light);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Make the Remove button fill its cell horizontally */
+.loot-cell button {
+  width: 100%;
+}
+
+/* Subtle row hover: because .loot-row is display:contents we
+   can't hover the row itself, so we highlight its four cells
+   via a transparent background shift on the cells. */
+.loot-cell:hover {
+  background-color: rgba(201, 168, 76, 0.04);
+}
+
+/* Total row pinned at the bottom of the loot list panel */
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-panel-alt);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.85rem;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+/* Gold colour for the dollar amount */
+#totalLoot {
+  color: var(--accent-glow);
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+
+/* --- SPLIT LOOT PANEL -------------------------------------- */
+/* The panel already has padding from .panel; give the button
+   and results room so nothing feels crowded. */
+#split-panel .btn-secondary {
+  margin-bottom: 1.25rem;
+}
+
+.results-area {
+  margin-top: 0.25rem;
+}
+
+/* Results box: framed in gold to stand out as the key output */
+.split-results {
+  background-color: var(--bg-panel-alt);
+  border: 1px solid var(--accent-gold);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+}
+
+/* Each result line: label on left, value on right */
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-family: var(--font-ui);
+}
+
+.result-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.result-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.result-value {
+  color: var(--accent-glow);
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+
+/* --- REFLECTION PANEL -------------------------------------- */
+/* Slightly different background so it reads as a distinct section */
+.reflection {
+  background-color: var(--bg-panel-alt);
+}
+
+.reflection p {
+  font-size: 0.92rem;
+  color: var(--text-light);
+  margin-bottom: 0.9rem;
+  line-height: 1.7;
+}
+
+.reflection code {
+  background: #0d0d1a;
+  color: var(--accent-glow);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+/* Figures for the sketch and validator screenshots */
+.reflection figure {
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.reflection figcaption {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  font-style: italic;
+}
+
+.validation-img {
+  display: block;
+  max-width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+}
+
+
+/* --- FOOTER ------------------------------------------------ */
+footer {
+  text-align: center;
+  padding: 1rem;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border-color);
+  margin-top: 1rem;
+}
+
+
+/* --- BREAKPOINT: 768 px — two-column grid ------------------ */
+@media (min-width: 768px) {
+
+  header {
+    padding: 2rem;
+  }
+
+  header h1 {
+    font-size: 2.6rem;
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* Explicit grid placement matches the spec layout */
+  #party-panel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #add-loot-panel {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #loot-list-panel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #split-panel {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  /* Reflection spans full width as a standalone bottom section */
+  .reflection {
+    grid-column: span 2;
+  }
+
+  /* On wider screens buttons don't need to be full-width,
+     except inside the loot table where they fill the cell */
+  .btn-primary,
+  .btn-secondary {
+    width: auto;
+    min-width: 160px;
+  }
+
+  /* Add Loot panel: inputs stay in a single vertical column
+     at ALL screen sizes — spec explicitly forbids horizontal shift */
+  #add-loot-panel .form-group {
+    flex-direction: column;
+  }
+}

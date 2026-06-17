@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dungeon Loot Splitter – split loot fairly among your adventuring party." />
+  <meta name="author" content="Your Name" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <title>Dungeon Loot Splitter</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- App title bar -->
+  <header>
+    <h1>Dungeon Loot Splitter</h1>
+    <p class="subtitle">Divide the spoils. Keep the peace.</p>
+  </header>
+
+  <main>
+
+    <!-- Row 1 left: party size drives the split calculation -->
+    <section class="panel" id="party-panel" aria-labelledby="party-heading">
+      <h2 id="party-heading">Party Setup</h2>
+      <div class="form-group">
+        <label for="party-size">Number of Party Members:</label>
+        <input
+          type="number"
+          id="party-size"
+          min="1"
+          step="1"
+          placeholder="e.g. 4"
+          aria-describedby="party-error"
+          required
+        />
+        <p class="error-msg" id="party-error" role="alert" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- Row 1 right: form to add a single loot item -->
+    <section class="panel" id="add-loot-panel" aria-labelledby="add-loot-heading">
+      <h2 id="add-loot-heading">Add Loot</h2>
+
+      <!-- Each label/input pair is its own form-group so they stack cleanly -->
+      <div class="form-group">
+        <label for="loot-name">Loot Name:</label>
+        <input
+          type="text"
+          id="loot-name"
+          placeholder="e.g. Golden Sword"
+          aria-describedby="loot-error"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="loot-value">Loot Value ($):</label>
+        <input
+          type="number"
+          id="loot-value"
+          min="0"
+          step="0.01"
+          placeholder="e.g. 150.00"
+          required
+        />
+      </div>
+
+      <!-- Phase 2 addition: quantity field so value × qty drives the total -->
+      <div class="form-group">
+        <label for="loot-quantity">Quantity:</label>
+        <input
+          type="number"
+          id="loot-quantity"
+          min="1"
+          step="1"
+          placeholder="e.g. 1"
+          required
+        />
+      </div>
+
+      <!-- Validation error lives below all fields, above the button -->
+      <p class="error-msg" id="loot-error" role="alert" aria-live="polite"></p>
+
+      <button id="add-loot-btn" class="btn btn-primary">Add Loot</button>
+    </section>
+
+    <!-- Row 2 left: live grid list of everything in the loot array -->
+    <section class="panel" id="loot-list-panel" aria-labelledby="loot-list-heading">
+      <h2 id="loot-list-heading">Loot List</h2>
+
+      <!-- Shown only when array is empty; hidden via JS class toggle -->
+      <div id="noLootMessage">No loot added.</div>
+
+      <!-- Grid table: header row + dynamic item rows rendered by JS -->
+      <div class="loot-table" id="loot-table-wrapper">
+        <div class="loot-header">Name</div>
+        <div class="loot-header">Value</div>
+        <div class="loot-header">Quantity</div>
+        <div class="loot-header">Remove</div>
+
+        <!-- JS empties and rebuilds this container on every updateUI() call -->
+        <div id="lootRows"></div>
+      </div>
+
+      <div class="total-row">
+        Total Loot: $<span id="totalLoot">0.00</span>
+      </div>
+    </section>
+
+    <!-- Row 2 right: split button + reactive results display -->
+    <section class="panel" id="split-panel" aria-labelledby="split-heading">
+      <h2 id="split-heading">Split Loot</h2>
+
+      <!-- Disabled until state is valid (loot exists + party size ≥ 1) -->
+      <button id="split-loot-btn" class="btn btn-secondary" disabled>Split Loot</button>
+
+      <div class="results-area" id="results-area" aria-live="polite">
+        <p class="error-msg" id="split-error" role="alert" aria-live="polite"></p>
+
+        <!-- Hidden when loot array is empty or party size is invalid -->
+        <div id="split-results" class="split-results hidden">
+          <div class="result-item">
+            <span class="result-label">Total Loot:</span>
+            <span class="result-value" id="result-total">$0.00</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Loot Per Party Member:</span>
+            <span class="result-value" id="result-per-member">$0.00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Full-width bottom row: Phase 2 reflection + logic flow sketch -->
+    <section class="panel reflection" aria-labelledby="logic-heading">
+      <h2 id="logic-heading">Logic Explanation</h2>
+
+      <p>
+        <strong>Single Source of Truth:</strong> The <code>loot</code> array declared at the top of
+        <code>script.js</code> is the only place loot data lives. Every number on the screen is
+        derived from that array at render time — nothing is stored in the DOM. If the array changes,
+        the screen updates. If you cleared every displayed number but left the array alone, running
+        <code>updateUI()</code> would restore them perfectly because the data was never lost.
+      </p>
+
+      <p>
+        <strong>Quantity in the Data Model:</strong> Each loot item is a plain object literal with three
+        properties: <code>name</code>, <code>value</code>, and <code>quantity</code>. Quantity was added
+        because a single row should be able to represent "5 Health Potions worth $10 each" as one entry
+        ($50 total) rather than five separate entries. The total contribution of each item is
+        <code>value × quantity</code>, and only the currency total — not individual items — is divided
+        among party members.
+      </p>
+
+      <p>
+        <strong>updateUI() as the Single Render Point:</strong> <code>updateUI()</code> is called after
+        every state change: adding loot, removing loot, and changing party size. Inside it, one
+        <code>for</code> loop calculates the grand total (<code>value × quantity</code> per item) while
+        simultaneously building each row in the loot table. The split result is then computed from that
+        same grand total. No calculation logic exists anywhere else — buttons trigger state changes,
+        then hand off to <code>updateUI()</code> to do all the math and rendering.
+      </p>
+
+      <p>
+        <strong>State Controls Visibility and Availability:</strong> The Split Loot button is disabled
+        unless the loot array has at least one item <em>and</em> the party size is a valid integer ≥ 1.
+        The results box is hidden when either condition fails. The "No loot added" message is shown only
+        when the array is empty. All of these are controlled by adding or removing a
+        <code>.hidden</code> CSS class — no inline style manipulation, no direct <code>style</code>
+        property writes in JavaScript.
+      </p>
+
+      <p>
+        <strong>Guarding State Integrity:</strong> Validation runs before any mutation. If the loot
+        name is blank, the value is not a number, the value is negative, or the quantity is less than 1,
+        the item is never pushed into the array. If party size is invalid, recalculation is skipped.
+        Invalid data cannot enter the system and cannot corrupt the displayed totals.
+      </p>
+
+      <!-- Logic flow sketch — replace with your actual sketch image -->
+      <figure>
+        <img
+          src="images/logic-flow.png"
+          alt="Logic flow sketch showing: user action → state change → updateUI() → interface update"
+          class="validation-img"
+        />
+        <figcaption>Logic flow: User Action → State Mutation → updateUI() → Interface Reflects State</figcaption>
+      </figure>
+
+      <!-- W3C validator screenshot -->
+      <figure>
+        <img
+          src="images/validation.png"
+          alt="Screenshot of W3C HTML validator showing no errors for this page"
+          class="validation-img"
+        />
+        <figcaption>W3C HTML Validation — no errors</figcaption>
+      </figure>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Dungeon Loot Splitter &mdash; Built for Web Dev</p>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
